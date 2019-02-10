@@ -1,0 +1,77 @@
+---
+- hosts: linux
+  become: yes
+  become_user: root
+  tasks:
+  - name: Update apt cache
+    apt:
+      update_cache: yes
+  - name: Upgrade all package
+    apt:
+      upgrade: dist
+  - name: install bcc tools 
+    shell: "{{ item }}" 
+    with_items:
+    - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4052245BD4284CDD
+    - echo "deb https://repo.iovisor.org/apt/xenial xenial main" | sudo tee /etc/apt/sources.list.d/iovisor.list
+    - sudo apt-get update
+    - sudo apt-get install -y bcc-tools libbcc-examples linux-headers-$(uname -r)
+
+  - name: Update
+    apt:
+      update_cache: yes
+  - name: Install tools
+    apt:
+      name: "{{ item }}" 
+      state: present
+      update_cache: true
+    with_items:
+    - sysstat
+    - dstat
+    - linux-tools-generic
+    - apache2-utils
+    - docker.io
+    - hping3
+    - tcpdump
+    - htop
+    - golang-go
+    - numactl
+    - iotop
+  - name: Mock Tools
+    apt:
+      name: "{{ item }}"
+      state: present
+      update_cache: true
+    with_items:
+    - stress
+    - sysbench
+
+  - name: Check pcstat file exists.
+    shell: ls /usr/local/bin/pcstat
+    ignore_errors: True
+    register: pcstat_result
+
+  - name: install pcstat
+    shell: | 
+      if [ $(uname -m) == "x86_64" ] ; then
+         curl -L -o pcstat https://github.com/tobert/pcstat/raw/2014-05-02-01/pcstat.x86_64
+      else
+         curl -L -o pcstat https://github.com/tobert/pcstat/raw/2014-05-02-01/pcstat.x86_32
+      fi
+      chmod 755 pcstat
+      mv ./pcstat /usr/local/bin
+    when: pcstat_result is failed
+    
+  - name: Check bcc file exists.
+    shell: ls /usr/share/bcc/tools
+    ignore_errors: True
+    register: bcc_result
+
+  - name: install bcc
+    shell: |
+        sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4052245BD4284CDD 
+        echo "deb https://repo.iovisor.org/apt/$(lsb_release -cs) $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/iovisor.list 
+        sudo apt-get update 
+        sudo apt-get install bcc-tools libbcc-examples linux-headers-$(uname -r) -y
+    when: bcc_result is failed
+
