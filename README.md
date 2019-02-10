@@ -4,5 +4,7 @@
 
 ## 生成SSH key
 ```
+git config --global user.name "marvinrencn"
+git config --global user.email "marvinrencn@gmail.com"
 ssh-keygen -t rsa -b 4096 -C "marvinrencn@gmail.com"
 ```
