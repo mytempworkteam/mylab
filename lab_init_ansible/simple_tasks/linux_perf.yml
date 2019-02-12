@@ -37,6 +37,8 @@
     - golang-go
     - numactl
     - iotop
+    - nmon
+    - fio
   - name: Mock Tools
     apt:
       name: "{{ item }}"
