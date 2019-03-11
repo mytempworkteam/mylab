@@ -39,6 +39,7 @@
     - iotop
     - nmon
     - fio
+    - modeprobe
   - name: Mock Tools
     apt:
       name: "{{ item }}"
